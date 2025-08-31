@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Responsive Landing Page • Sticky Interactive Navbar</title>
+  <style>
+    :root {
+      --brand: #4f46e5; /* Indigo */
+      --brand-700: #4338ca;
+      --text: #0f172a; /* Slate-900 */
+      --muted: #475569; /* Slate-600 */
+      --bg: #ffffff;
+      --bg-muted: #f8fafc; /* Slate-50 */
+      --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+    }
+
+    /* Reset & base */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text); background: var(--bg);
+    }
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ===== Sticky Navbar ===== */
+    .navbar {
+      position: fixed; inset-inline: 0; top: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      transition: background-color .25s ease, box-shadow .25s ease, border-color .25s ease, backdrop-filter .25s ease, height .25s ease;
+      height: 72px; /* default height at top */
+      background: transparent; border-bottom: 1px solid transparent;
+      backdrop-filter: saturate(180%) blur(0px);
+    }
+    .navbar.scrolled {
+      background: rgba(255,255,255,.9);
+      border-color: rgba(15, 23, 42, .06);
+      box-shadow: var(--shadow);
+      backdrop-filter: saturate(180%) blur(10px);
+      height: 64px; /* subtle shrink when scrolled */
+    }
+
+    .nav-inner { width: min(1200px, 100%); display: flex; align-items: center; gap: 16px; padding: 0 20px; }
+
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
+    .brand .logo {
+      width: 36px; height: 36px; border-radius: 12px; background: linear-gradient(135deg, var(--brand), var(--brand-700));
+      display: grid; place-items: center; color: white; font-weight: 900; font-size: 18px; box-shadow: 0 6px 16px rgba(79,70,229,.35);
+      transform: translateZ(0); will-change: transform; transition: transform .2s ease;
+    }
+    .brand:hover .logo { transform: rotate(-6deg) scale(1.05); }
+
+    /* Desktop nav */
+    .nav { margin-left: auto; display: none; align-items: center; gap: 6px; }
+    .nav a {
+      position: relative; display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 14px; border-radius: 12px; font-weight: 600; color: var(--muted);
+      transition: color .2s ease, background .2s ease, transform .2s ease;
+    }
+    .nav a:hover { color: var(--text); background: var(--bg-muted); }
+
+    /* Animated underline on hover */
+    .nav a::after {
+      content: ""; position: absolute; left: 12px; right: 12px; bottom: 8px; height: 2px; border-radius: 2px;
+      background: linear-gradient(90deg, var(--brand), var(--brand-700)); transform: scaleX(0); transform-origin: left center;
+      transition: transform .25s ease;
+    }
+    .nav a:hover::after { transform: scaleX(1); }
+
+    /* Active link state (updated on scroll) */
+    .nav a.active { color: var(--brand-700); background: rgba(79,70,229,.08); }
+    .nav a.active::after { transform: scaleX(1); }
+
+    /* Mobile menu */
+    .menu-btn { margin-left: auto; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid rgba(15,23,42,.08); border-radius: 12px; background: white; box-shadow: var(--shadow); cursor: pointer; }
+    .menu-bars, .menu-close { width: 22px; height: 22px; }
+    .menu-close { display: none; }
+
+    .mobile-panel {
+      position: fixed; top: 72px; left: 0; right: 0; background: rgba(255,255,255,.98); border-bottom: 1px solid rgba(15,23,42,.08);
+      display: grid; gap: 6px; padding: 12px; transform: translateY(-12px); opacity: 0; pointer-events: none; transition: transform .2s ease, opacity .2s ease; backdrop-filter: blur(8px);
+    }
+    .mobile-panel.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .mobile-panel a { padding: 14px 12px; border-radius: 12px; font-weight: 600; color: var(--muted); }
+    .mobile-panel a:hover { background: var(--bg-muted); color: var(--text); }
+
+    /* Hero */
+    .hero { padding-top: 96px; /* space for navbar */ }
+    .hero .wrap { width: min(1100px, 100%); margin: 0 auto; padding: 64px 20px; display: grid; gap: 28px; align-items: center; }
+    .kicker { font-weight: 700; color: var(--brand-700); letter-spacing: .12em; text-transform: uppercase; font-size: 12px; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 48px); line-height: 1.05; }
+    .lead { color: var(--muted); font-size: clamp(16px, 2.6vw, 18px); max-width: 68ch; }
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      appearance: none; border: none; cursor: pointer; padding: 14px 18px; border-radius: 14px; font-weight: 700; transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn.primary { background: linear-gradient(135deg, var(--brand), var(--brand-700)); color: #fff; box-shadow: 0 8px 20px rgba(79,70,229,.35); }
+    .btn.primary:hover { transform: translateY(-1px); }
+    .btn.ghost { background: var(--bg-muted); color: var(--text); }
+    .btn.ghost:hover { background: #eef2ff; }
+
+    /* Sections */
+    section { scroll-margin-top: 92px; }
+    .section { background: var(--bg); }
+    .section.alt { background: var(--bg-muted); }
+    .section .wrap { width: min(1100px, 100%); margin: 0 auto; padding: 80px 20px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .card { background: white; border: 1px solid rgba(15,23,42,.06); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); }
+    .card h3 { margin: 0 0 6px; font-size: 18px; }
+    .card p { margin: 0; color: var(--muted); }
+
+    .footer { border-top: 1px solid rgba(15,23,42,.06); }
+    .footer .wrap { display: flex; justify-content: space-between; align-items: center; padding: 30px 20px; color: var(--muted); }
+
+    /* Responsive */
+    @media (min-width: 900px) {
+      .nav { display: inline-flex; }
+      .menu-btn { display: none; }
+      .mobile-panel { display: none; }
+      .hero .wrap { grid-template-columns: 1.1fr 0.9fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- ===== NAVBAR ===== -->
+  <header class="navbar" id="navbar" role="banner">
+    <div class="nav-inner">
+      <a class="brand" href="#home" aria-label="Go to home">
+        <span class="logo" aria-hidden="true">R</span>
+        <span>Responsive</span>
+      </a>
+
+      <nav class="nav" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <button class="menu-btn" id="menuBtn" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle menu">
+        <svg class="menu-bars" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+        <svg class="menu-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Mobile dropdown -->
+    <div id="mobileMenu" class="mobile-panel" role="dialog" aria-label="Mobile Menu">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </header>
+
+  <!-- ===== HERO ===== -->
+  <main id="home" class="hero">
+    <div class="wrap">
+      <div>
+        <span class="kicker">Modern. Responsive. Fast.</span>
+        <h1>Build a clean, responsive landing page with a sticky, interactive navbar.</h1>
+        <p class="lead">This demo shows a fixed navigation that changes style on scroll and hover, highlights the active section, and adapts fluidly across screen sizes. Reuse the same header across pages to keep the menu visible everywhere.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#features">Explore Features</a>
+          <a class="btn ghost" href="#contact">Get in Touch</a>
+        </div>
+      </div>
+      <div>
+        <img alt="Illustration of a responsive website" src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=1600&auto=format&fit=crop" />
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== SECTIONS ===== -->
+  <section id="features" class="section">
+    <div class="wrap">
+      <h2>Features</h2>
+      <p class="lead">Hover for animated underlines, scroll to change navbar style, and watch links auto-highlight as sections enter view.</p>
+      <div class="grid-3">
+        <div class="card"><h3>Sticky Header</h3><p>Fixed at the top, visible on every page.</p></div>
+        <div class="card"><h3>Scroll Aware</h3><p>Navbar shrinks and gains a blurred background when you scroll.</p></div>
+        <div class="card"><h3>Accessible</h3><p>Keyboard focusable, semantic landmarks, ARIA attributes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="section alt">
+    <div class="wrap">
+      <h2>Pricing</h2>
+      <div class="grid-3">
+        <div class="card"><h3>Starter</h3><p>Perfect for personal projects.</p></div>
+        <div class="card"><h3>Pro</h3><p>For growing teams and startups.</p></div>
+        <div class="card"><h3>Enterprise</h3><p>Custom solutions at scale.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="section">
+    <div class="wrap">
+      <h2>FAQ</h2>
+      <div class="grid-3">
+        <div class="card"><h3>Is the navbar fixed?</h3><p>Yes, it remains visible as you navigate.</p></div>
+        <div class="card"><h3>Can I reuse it?</h3><p>Copy the <code>&lt;header&gt;</code> into all pages or include via a layout/partial.</p></div>
+        <div class="card"><h3>Mobile friendly?</h3><p>Includes a clean mobile menu with a subtle animation.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section alt">
+    <div class="wrap">
+      <h2>Contact</h2>
+      <p class="lead">Have questions? Say hello and we’ll get back to you.</p>
+      <form onsubmit="event.preventDefault(); alert('Submitted!')" style="display:grid; gap:12px; max-width: 560px;">
+        <input required placeholder="Your name" style="padding:14px 16px; border:1px solid rgba(15,23,42,.12); border-radius:12px;" />
+        <input required type="email" placeholder="Email address" style="padding:14px 16px; border:1px solid rgba(15,23,42,.12); border-radius:12px;" />
+        <textarea rows="4" placeholder="Message" style="padding:14px 16px; border:1px solid rgba(15,23,42,.12); border-radius:12px;"></textarea>
+        <button class="btn primary" type="submit">Send Message</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p>© <span id="year"></span> Responsive Landing. All rights reserved.</p>
+      <a href="#home">Back to top ↑</a>
+    </div>
+  </footer>
+
+  <script>
+    // ===== Scroll-based navbar styling =====
+    const navbar = document.getElementById('navbar');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const menuBtn = document.getElementById('menuBtn');
+
+    function setScrolled() {
+      if (window.scrollY > 10) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    }
+    setScrolled();
+    window.addEventListener('scroll', setScrolled, { passive: true });
+
+    // ===== Mobile menu toggle =====
+    menuBtn?.addEventListener('click', () => {
+      const isOpen = mobileMenu.classList.toggle('open');
+      menuBtn.setAttribute('aria-expanded', String(isOpen));
+      // swap icons
+      menuBtn.querySelector('.menu-bars').style.display = isOpen ? 'none' : 'block';
+      menuBtn.querySelector('.menu-close').style.display = isOpen ? 'block' : 'none';
+    });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('#mobileMenu a').forEach(a => a.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      menuBtn?.setAttribute('aria-expanded', 'false');
+      if (menuBtn) { menuBtn.querySelector('.menu-bars').style.display = 'block'; menuBtn.querySelector('.menu-close').style.display = 'none'; }
+    }));
+
+    // ===== Active link highlighting with IntersectionObserver =====
+    const links = Array.from(document.querySelectorAll('.nav a'));
+    const sections = links.map(link => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = '#' + entry.target.id;
+        const link = links.find(a => a.getAttribute('href') === id);
+        if (!link) return;
+        if (entry.isIntersecting) {
+          links.forEach(a => a.classList.remove('active'));
+          link.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0.01 });
+
+    sections.forEach(sec => observer.observe(sec));
+
+    // Year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
